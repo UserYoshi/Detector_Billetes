@@ -1,4 +1,5 @@
-ultralytics
+ultralytics==8.0.20
+roboflow
+opencv-python-headless
 streamlit
-opencv-python
-Pillow
+pillow
