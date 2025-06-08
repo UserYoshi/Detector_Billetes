@@ -7,7 +7,7 @@ import torch
 print("✅ GPU disponible:", torch.cuda.is_available())
 
 # Cargar el modelo YOLO personalizado
-model = YOLO("best.pt")
+model = YOLO("Detector_Billetes/best.pt")
 
 # Iniciar cámara
 cap = cv2.VideoCapture(0)
