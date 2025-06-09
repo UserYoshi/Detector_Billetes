@@ -52,70 +52,57 @@ model = YOLO("best.pt")
 # Título y descripción
 st.title("💵 Comparador Visual de Billetes Detectados")
 st.markdown("""
-Este dashboard permite subir una imagen y ver una comparativa visual entre la imagen original 
-y la imagen con billetes detectados usando YOLOv11. También se muestran métricas globales y confianza.
+Este dashboard permite subir una o más imágenes y ver una comparativa visual entre la imagen original 
+y la imagen con billetes detectados usando YOLOv8. También se muestran métricas globales y confianza.
 """)
 
-# Subida de imagen
-uploaded_file = st.file_uploader("📸 Sube una imagen JPG o PNG", type=["jpg", "jpeg", "png"])
+# Subida de múltiples imágenes
+uploaded_files = st.file_uploader("📸 Sube una o más imágenes JPG o PNG", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
 
-if uploaded_file:
-    # Leer y convertir imagen
-    image = Image.open(uploaded_file).convert("RGB")
-    img_array = np.array(image)
+if uploaded_files:
+    for uploaded_file in uploaded_files:
+        st.markdown("---")
+        st.markdown(f"## 🖼️ Análisis de: `{uploaded_file.name}`")
 
-    # Ejecutar detección
-    results = model(img_array)
-    annotated = results[0].plot()
-    boxes = results[0].boxes
+        # Leer y convertir imagen
+        image = Image.open(uploaded_file).convert("RGB")
+        img_array = np.array(image)
 
-    # Convertir imágenes a base64 para mostrarlas en HTML
-    # Imagen original
-    buffered_original = cv2.imencode('.jpg', cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR))[1]
-    original_b64 = base64.b64encode(buffered_original).decode()
+        # Ejecutar detección
+        results = model(img_array)
+        annotated = results[0].plot()
+        boxes = results[0].boxes
 
-    # Imagen con detecciones
-    buffered_annotated = cv2.imencode('.jpg', annotated)[1]
-    annotated_b64 = base64.b64encode(buffered_annotated).decode()
+        # Mostrar imágenes tipo comparador
+        col1, col2 = st.columns(2, gap="large")
+        with col1:
+            st.markdown("### 📷 Imagen Original")
+            st.image(image, use_container_width=True)
+        with col2:
+            st.markdown("### 🧠 Imagen con Detecciones")
+            st.image(annotated, use_container_width=True)
 
-    # Mostrar imágenes tipo comparador
-    # Mostrar imágenes tipo comparador (horizontal)
-    col1, col2 = st.columns(2, gap="large")
-    
-    with col1:
-        st.markdown("### 📷 Imagen Original")
-        st.image(image, use_container_width=True)
-    
-    with col2:
-        st.markdown("### 🧠 Imagen con Detecciones")
-        st.image(annotated, use_container_width=True)
+        # Métricas de detección
+        st.markdown("### 📊 Estadísticas de Detección")
 
+        if boxes is not None and boxes.cls.numel() > 0:
+            class_counts = {}
+            data = []
 
-    # Métricas de detección
-    st.markdown("---")
-    st.subheader("📊 Estadísticas de Detección")
+            for cls, conf in zip(boxes.cls, boxes.conf):
+                cls_name = model.names[int(cls)]
+                class_counts[cls_name] = class_counts.get(cls_name, 0) + 1
+                data.append({"Clase": cls_name, "Confianza": f"{conf:.2f}"})
 
-    if boxes is not None and boxes.cls.numel() > 0:
-        class_counts = {}
-        data = []
+            for clase, cantidad in class_counts.items():
+                st.write(f"🧾 **{clase}**: {cantidad} billete(s)")
 
-        for cls, conf in zip(boxes.cls, boxes.conf):
-            cls_name = model.names[int(cls)]
-            class_counts[cls_name] = class_counts.get(cls_name, 0) + 1
-            data.append({"Clase": cls_name, "Confianza": f"{conf:.2f}"})
+            df = pd.DataFrame(data)
+            st.markdown("### 📋 Detalles individuales")
+            st.table(df)
 
-        # Conteo por clase
-        for clase, cantidad in class_counts.items():
-            st.write(f"🧾 **{clase}**: {cantidad} billete(s)")
-
-        # Tabla con detalles
-        df = pd.DataFrame(data)
-        st.markdown("### 📋 Detalles individuales")
-        st.table(df)
-
-        # Promedio de confianza
-        confs = [conf.item() for conf in boxes.conf]
-        promedio = np.mean(confs)
-        st.success(f"🔎 **Confianza promedio:** {promedio:.2f}")
-    else:
-        st.warning("⚠️ No se detectaron billetes en la imagen.")
+            confs = [conf.item() for conf in boxes.conf]
+            promedio = np.mean(confs)
+            st.success(f"🔎 **Confianza promedio:** {promedio:.2f}")
+        else:
+            st.warning("⚠️ No se detectaron billetes en la imagen.")
