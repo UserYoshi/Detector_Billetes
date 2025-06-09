@@ -47,7 +47,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Cargar modelo YOLO
-model = YOLO("best.pt")
+model = YOLO("best1.pt")
 
 # Título y descripción
 st.title("💵 Comparador Visual de Billetes Detectados")
