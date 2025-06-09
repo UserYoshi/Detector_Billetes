@@ -53,7 +53,7 @@ model = YOLO("best.pt")
 st.title("💵 Comparador Visual de Billetes Detectados")
 st.markdown("""
 Este dashboard permite subir una imagen y ver una comparativa visual entre la imagen original 
-y la imagen con billetes detectados usando YOLOv8. También se muestran métricas globales y confianza.
+y la imagen con billetes detectados usando YOLOv11. También se muestran métricas globales y confianza.
 """)
 
 # Subida de imagen
