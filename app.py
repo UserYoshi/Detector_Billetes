@@ -1,55 +1,46 @@
+import streamlit as st
 from ultralytics import YOLO
-import cv2
-import time
 import torch
+import cv2
+import numpy as np
+from PIL import Image
 
-# Verificar si GPU está disponible
-print("✅ GPU disponible:", torch.cuda.is_available())
+# Cargar el modelo YOLO
+model = YOLO("best.pt")  # asegúrate que el archivo esté en el mismo repo o usa un enlace externo
 
+st.set_page_config(page_title="Detector de Billetes", layout="wide")
+st.title("🧠 Detector de Billetes")
 
-# Cargar el modelo YOLO personalizado
-model = YOLO("best.pt")
+# Subida de imagen
+uploaded_file = st.file_uploader("📸 Sube una imagen para analizar", type=["jpg", "jpeg", "png"])
 
-# Iniciar cámara
-cap = cv2.VideoCapture(0)
+if uploaded_file is not None:
+    # Convertir a imagen OpenCV
+    image = Image.open(uploaded_file).convert("RGB")
+    img_array = np.array(image)
 
-# Configurar resolución y FPS
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-cap.set(cv2.CAP_PROP_FPS, 15)
+    # Mostrar la imagen original
+    st.image(image, caption="Imagen original", use_column_width=True)
 
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        print("❌ No se pudo leer el frame de la cámara.")
-        break
+    # Procesar con YOLO
+    results = model(img_array)
 
-    # Redimensionar frame para mejorar velocidad
-    frame = cv2.resize(frame, (640, 480))
-
-    # Medir tiempo de inferencia
-    start = time.time()
-
-    # Inferencia YOLO
-    results = model(frame)
-
-    # Dibujar resultados
+    # Dibujar los resultados
     annotated_frame = results[0].plot()
 
-    # Calcular y mostrar FPS
-    end = time.time()
-    fps = 1 / (end - start)
-    cv2.putText(annotated_frame, f"FPS: {fps:.2f}", (10, 30),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    # Mostrar imagen con detecciones
+    st.image(annotated_frame, caption="🔍 Detecciones", use_column_width=True)
 
-    # Mostrar resultado
-    cv2.imshow("YOLO Inference", annotated_frame)
+    # Mostrar métricas
+    st.subheader("📊 Métricas de detección")
+    boxes = results[0].boxes
+    if boxes is not None:
+        class_counts = {}
+        for cls in boxes.cls:
+            cls_name = model.names[int(cls)]
+            class_counts[cls_name] = class_counts.get(cls_name, 0) + 1
 
-    # Salir con ESC (tecla 27)
-    if cv2.waitKey(1) & 0xFF == 27:
-        break
-
-# Liberar recursos
-cap.release()
-cv2.destroyAllWindows()
-
+        for cls_name, count in class_counts.items():
+            st.write(f"- {cls_name}: {count}")
+    else:
+        st.write("No se detectaron objetos.")
