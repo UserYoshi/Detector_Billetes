@@ -84,11 +84,11 @@ if uploaded_file:
     
     with col1:
         st.markdown("### 📷 Imagen Original")
-        st.image(image, use_column_width=True)
+        st.image(image, use_container_width=True)
     
     with col2:
         st.markdown("### 🧠 Imagen con Detecciones")
-        st.image(annotated, use_column_width=True)
+        st.image(annotated, use_container_width=True)
 
 
     # Métricas de detección
