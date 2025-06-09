@@ -6,14 +6,6 @@ import torch
 # Verificar si GPU está disponible
 print("✅ GPU disponible:", torch.cuda.is_available())
 
-import os
-
-# Descargar el modelo desde Google Drive si no existe
-if not os.path.exists("best.pt"):
-    import gdown
-    url = "https://drive.google.com/file/d/1masFBtUVA0B6dWwlgJUKUArZVD0K7u4_/view?usp=sharing"
-    gdown.download(url, "best.pt", quiet=False)
-
 
 # Cargar el modelo YOLO personalizado
 model = YOLO("best.pt")
