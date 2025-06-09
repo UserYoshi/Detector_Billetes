@@ -3,4 +3,5 @@ ultralytics
 opencv-python
 gdown
 torch
+cv2
 
