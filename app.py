@@ -79,23 +79,17 @@ if uploaded_file:
     annotated_b64 = base64.b64encode(buffered_annotated).decode()
 
     # Mostrar imágenes tipo comparador
-    st.markdown('<div class="comparador-container">', unsafe_allow_html=True)
+    # Mostrar imágenes tipo comparador (horizontal)
+    col1, col2 = st.columns(2, gap="large")
+    
+    with col1:
+        st.markdown("### 📷 Imagen Original")
+        st.image(image, use_column_width=True)
+    
+    with col2:
+        st.markdown("### 🧠 Imagen con Detecciones")
+        st.image(annotated, use_column_width=True)
 
-    st.markdown(f'''
-        <div class="comparador-item">
-            <div class="comparador-label">📷 Imagen Original</div>
-            <img src="data:image/jpeg;base64,{original_b64}" class="comparador-img"/>
-        </div>
-    ''', unsafe_allow_html=True)
-
-    st.markdown(f'''
-        <div class="comparador-item">
-            <div class="comparador-label">🧠 Imagen con Detecciones</div>
-            <img src="data:image/jpeg;base64,{annotated_b64}" class="comparador-img"/>
-        </div>
-    ''', unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
 
     # Métricas de detección
     st.markdown("---")
